@@ -4,18 +4,19 @@ import { Task, TaskStatus } from '@claude-task-manage/core';
 import { useTasks } from './hooks/useTasks.js';
 import { CreateTaskForm } from './components/CreateTaskForm.js';
 import { EditTaskForm } from './components/EditTaskForm.js';
+import { AddTodoForm } from './components/AddTodoForm.js';
 
 interface AppProps {
   repoPath?: string;
 }
 
-type Mode = 'normal' | 'create' | 'edit';
+type Mode = 'normal' | 'create' | 'edit' | 'add-todo';
 
 const STATUSES: TaskStatus[] = ['TODO', 'INPROGRESS', 'DONE'];
 
 export function App({ repoPath: initialRepoPath }: AppProps) {
   const { exit } = useApp();
-  const { repoPath, tasks, loading, error, createTask, updateTask, updateStatus, deleteTask } = useTasks(initialRepoPath);
+  const { repoPath, tasks, loading, error, createTask, updateTask, updateStatus, deleteTask, addTodo } = useTasks(initialRepoPath);
 
   const [mode, setMode] = useState<Mode>('normal');
   const [focusedColumn, setFocusedColumn] = useState(0);
@@ -50,6 +51,9 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
     } else if (input === 'e' && currentTask) {
       setSelectedTask(currentTask);
       setMode('edit');
+    } else if (input === 't' && currentTask) {
+      setSelectedTask(currentTask);
+      setMode('add-todo');
     } else if (key.leftArrow || input === 'h') {
       if (currentTask) {
         const newStatusIndex = Math.max(0, focusedColumn - 1);
@@ -97,6 +101,13 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
     setMode('normal');
   };
 
+  const handleAddTodoSubmit = async (content: string) => {
+    if (selectedTask) {
+      await addTodo(selectedTask.id, content);
+    }
+    setMode('normal');
+  };
+
   const handleCancel = () => {
     setMode('normal');
   };
@@ -110,6 +121,10 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
 
   if (mode === 'edit' && selectedTask) {
     return <EditTaskForm task={selectedTask} onSubmit={handleEditSubmit} onCancel={handleCancel} />;
+  }
+
+  if (mode === 'add-todo' && selectedTask) {
+    return <AddTodoForm taskName={selectedTask.name} onSubmit={handleAddTodoSubmit} onCancel={handleCancel} />;
   }
 
   const repoName = repoPath?.split('/').pop() || 'unknown';
