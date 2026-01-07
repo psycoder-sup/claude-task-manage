@@ -1,0 +1,21 @@
+{
+  "name": "@claude-task-manage/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.0",
+    "proper-lockfile": "^4.1.2",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/proper-lockfile": "^4.1.4",
+    "vitest": "^2.0.0"
+  }
+}
