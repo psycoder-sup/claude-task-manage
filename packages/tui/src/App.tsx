@@ -5,18 +5,19 @@ import { useTasks } from './hooks/useTasks.js';
 import { CreateTaskForm } from './components/CreateTaskForm.js';
 import { EditTaskForm } from './components/EditTaskForm.js';
 import { AddTodoForm } from './components/AddTodoForm.js';
+import { PlanPicker } from './components/PlanPicker.js';
 
 interface AppProps {
   repoPath?: string;
 }
 
-type Mode = 'normal' | 'create' | 'edit' | 'add-todo';
+type Mode = 'normal' | 'create' | 'edit' | 'add-todo' | 'link-plan';
 
 const STATUSES: TaskStatus[] = ['TODO', 'INPROGRESS', 'DONE'];
 
 export function App({ repoPath: initialRepoPath }: AppProps) {
   const { exit } = useApp();
-  const { repoPath, tasks, loading, error, createTask, updateTask, updateStatus, deleteTask, addTodo } = useTasks(initialRepoPath);
+  const { repoPath, tasks, loading, error, createTask, updateTask, updateStatus, deleteTask, addTodo, linkPlan } = useTasks(initialRepoPath);
 
   const [mode, setMode] = useState<Mode>('normal');
   const [focusedColumn, setFocusedColumn] = useState(0);
@@ -54,6 +55,9 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
     } else if (input === 't' && currentTask) {
       setSelectedTask(currentTask);
       setMode('add-todo');
+    } else if (input === 'p' && currentTask) {
+      setSelectedTask(currentTask);
+      setMode('link-plan');
     } else if (key.leftArrow || input === 'h') {
       if (currentTask) {
         const newStatusIndex = Math.max(0, focusedColumn - 1);
@@ -108,6 +112,13 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
     setMode('normal');
   };
 
+  const handleLinkPlanSubmit = async (planPath: string) => {
+    if (selectedTask) {
+      await linkPlan(selectedTask.id, planPath);
+    }
+    setMode('normal');
+  };
+
   const handleCancel = () => {
     setMode('normal');
   };
@@ -125,6 +136,10 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
 
   if (mode === 'add-todo' && selectedTask) {
     return <AddTodoForm taskName={selectedTask.name} onSubmit={handleAddTodoSubmit} onCancel={handleCancel} />;
+  }
+
+  if (mode === 'link-plan' && selectedTask) {
+    return <PlanPicker onSelect={handleLinkPlanSubmit} onCancel={handleCancel} />;
   }
 
   const repoName = repoPath?.split('/').pop() || 'unknown';

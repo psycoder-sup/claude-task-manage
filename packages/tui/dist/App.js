@@ -5,10 +5,11 @@ import { useTasks } from './hooks/useTasks.js';
 import { CreateTaskForm } from './components/CreateTaskForm.js';
 import { EditTaskForm } from './components/EditTaskForm.js';
 import { AddTodoForm } from './components/AddTodoForm.js';
+import { PlanPicker } from './components/PlanPicker.js';
 const STATUSES = ['TODO', 'INPROGRESS', 'DONE'];
 export function App({ repoPath: initialRepoPath }) {
     const { exit } = useApp();
-    const { repoPath, tasks, loading, error, createTask, updateTask, updateStatus, deleteTask, addTodo } = useTasks(initialRepoPath);
+    const { repoPath, tasks, loading, error, createTask, updateTask, updateStatus, deleteTask, addTodo, linkPlan } = useTasks(initialRepoPath);
     const [mode, setMode] = useState('normal');
     const [focusedColumn, setFocusedColumn] = useState(0);
     const [focusedTaskIndex, setFocusedTaskIndex] = useState({ 0: 0, 1: 0, 2: 0 });
@@ -42,6 +43,10 @@ export function App({ repoPath: initialRepoPath }) {
         else if (input === 't' && currentTask) {
             setSelectedTask(currentTask);
             setMode('add-todo');
+        }
+        else if (input === 'p' && currentTask) {
+            setSelectedTask(currentTask);
+            setMode('link-plan');
         }
         else if (key.leftArrow || input === 'h') {
             if (currentTask) {
@@ -99,6 +104,12 @@ export function App({ repoPath: initialRepoPath }) {
         }
         setMode('normal');
     };
+    const handleLinkPlanSubmit = async (planPath) => {
+        if (selectedTask) {
+            await linkPlan(selectedTask.id, planPath);
+        }
+        setMode('normal');
+    };
     const handleCancel = () => {
         setMode('normal');
     };
@@ -114,6 +125,9 @@ export function App({ repoPath: initialRepoPath }) {
     }
     if (mode === 'add-todo' && selectedTask) {
         return _jsx(AddTodoForm, { taskName: selectedTask.name, onSubmit: handleAddTodoSubmit, onCancel: handleCancel });
+    }
+    if (mode === 'link-plan' && selectedTask) {
+        return _jsx(PlanPicker, { onSelect: handleLinkPlanSubmit, onCancel: handleCancel });
     }
     const repoName = repoPath?.split('/').pop() || 'unknown';
     return (_jsxs(Box, { flexDirection: "column", width: "100%", children: [_jsx(Box, { borderStyle: "single", paddingX: 1, children: _jsxs(Text, { bold: true, children: ["claude-tasks: ", repoName] }) }), _jsxs(Box, { flexGrow: 1, children: [_jsx(Box, { flexGrow: 1, flexDirection: "row", children: STATUSES.map((status, colIndex) => (_jsxs(Box, { flexDirection: "column", flexGrow: 1, borderStyle: "single", borderColor: focusedColumn === colIndex ? 'cyan' : undefined, children: [_jsx(Box, { paddingX: 1, children: _jsxs(Text, { bold: true, children: [status, " (", tasksByStatus[status].length, ")"] }) }), _jsx(Box, { flexDirection: "column", paddingX: 1, children: tasksByStatus[status].map((task, taskIndex) => {
