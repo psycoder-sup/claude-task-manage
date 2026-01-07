@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@claude-task-manage/core": ["packages/core/src"],
+      "@claude-task-manage/mcp": ["packages/mcp/src"],
+      "@claude-task-manage/tui": ["packages/tui/src"]
+    }
+  },
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/mcp" },
+    { "path": "packages/tui" }
+  ]
+}
