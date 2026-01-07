@@ -1,8 +1,20 @@
-# Task Management MCP Implementation Plan
+# Task Management MCP Implementation Plan [In-Progress]
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build a task management MCP server with TUI that tracks tasks bound to git repositories, integrating with Claude Code's planning workflow.
+
+## Progress
+- [x] Task 1: Project Setup
+- [x] Task 2: Core Types and Schemas
+- [x] Task 3: Repository Detection
+- [ ] Task 4: Storage Layer
+- [ ] Task 5: MCP Server
+- [ ] Task 6: TUI - Basic App Structure
+- [ ] Task 7: TUI - Create/Edit Task Forms
+- [ ] Task 8: TUI - Add Todo Form
+- [ ] Task 9: TUI - Link Plan Picker
+- [ ] Task 10: Final Polish
 
 **Architecture:** TypeScript monorepo with three packages: `core` (shared storage/types), `mcp` (MCP server), and `tui` (Ink-based terminal UI). File-based storage at `~/.claude-tasks/<repo-hash>/`.
 
