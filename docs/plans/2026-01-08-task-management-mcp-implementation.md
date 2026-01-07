@@ -1,4 +1,4 @@
-# Task Management MCP Implementation Plan [In-Progress]
+# Task Management MCP Implementation Plan [Done]
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
@@ -11,10 +11,10 @@
 - [x] Task 4: Storage Layer
 - [x] Task 5: MCP Server
 - [x] Task 6: TUI - Basic App Structure
-- [ ] Task 7: TUI - Create/Edit Task Forms
-- [ ] Task 8: TUI - Add Todo Form
-- [ ] Task 9: TUI - Link Plan Picker
-- [ ] Task 10: Final Polish
+- [x] Task 7: TUI - Create/Edit Task Forms
+- [x] Task 8: TUI - Add Todo Form
+- [x] Task 9: TUI - Link Plan Picker
+- [x] Task 10: Final Polish
 
 **Architecture:** TypeScript monorepo with three packages: `core` (shared storage/types), `mcp` (MCP server), and `tui` (Ink-based terminal UI). File-based storage at `~/.claude-tasks/<repo-hash>/`.
 
