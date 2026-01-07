@@ -8,9 +8,9 @@
 - [x] Task 1: Project Setup
 - [x] Task 2: Core Types and Schemas
 - [x] Task 3: Repository Detection
-- [ ] Task 4: Storage Layer
-- [ ] Task 5: MCP Server
-- [ ] Task 6: TUI - Basic App Structure
+- [x] Task 4: Storage Layer
+- [x] Task 5: MCP Server
+- [x] Task 6: TUI - Basic App Structure
 - [ ] Task 7: TUI - Create/Edit Task Forms
 - [ ] Task 8: TUI - Add Todo Form
 - [ ] Task 9: TUI - Link Plan Picker

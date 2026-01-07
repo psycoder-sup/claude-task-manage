@@ -2,17 +2,22 @@ import React, { useState } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import { Task, TaskStatus } from '@claude-task-manage/core';
 import { useTasks } from './hooks/useTasks.js';
+import { CreateTaskForm } from './components/CreateTaskForm.js';
+import { EditTaskForm } from './components/EditTaskForm.js';
 
 interface AppProps {
   repoPath?: string;
 }
 
+type Mode = 'normal' | 'create' | 'edit';
+
 const STATUSES: TaskStatus[] = ['TODO', 'INPROGRESS', 'DONE'];
 
 export function App({ repoPath: initialRepoPath }: AppProps) {
   const { exit } = useApp();
-  const { repoPath, tasks, loading, error, updateStatus, deleteTask, updateTodo } = useTasks(initialRepoPath);
+  const { repoPath, tasks, loading, error, createTask, updateTask, updateStatus, deleteTask } = useTasks(initialRepoPath);
 
+  const [mode, setMode] = useState<Mode>('normal');
   const [focusedColumn, setFocusedColumn] = useState(0);
   const [focusedTaskIndex, setFocusedTaskIndex] = useState<Record<number, number>>({ 0: 0, 1: 0, 2: 0 });
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -31,6 +36,8 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
   };
 
   useInput((input, key) => {
+    if (mode !== 'normal') return;
+
     if (input === 'q') {
       exit();
       return;
@@ -38,7 +45,12 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
 
     const currentTask = getCurrentTask();
 
-    if (key.leftArrow || input === 'h') {
+    if (input === 'n') {
+      setMode('create');
+    } else if (input === 'e' && currentTask) {
+      setSelectedTask(currentTask);
+      setMode('edit');
+    } else if (key.leftArrow || input === 'h') {
       if (currentTask) {
         const newStatusIndex = Math.max(0, focusedColumn - 1);
         if (newStatusIndex !== focusedColumn) {
@@ -53,8 +65,6 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
         }
       }
     } else if (key.upArrow || input === 'k') {
-      const currentStatus = STATUSES[focusedColumn];
-      const maxIndex = tasksByStatus[currentStatus].length - 1;
       setFocusedTaskIndex(prev => ({
         ...prev,
         [focusedColumn]: Math.max(0, (prev[focusedColumn] || 0) - 1),
@@ -75,8 +85,32 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
     }
   });
 
+  const handleCreateSubmit = async (name: string, description: string) => {
+    await createTask(name, description);
+    setMode('normal');
+  };
+
+  const handleEditSubmit = async (name: string, description: string) => {
+    if (selectedTask) {
+      await updateTask(selectedTask.id, name, description);
+    }
+    setMode('normal');
+  };
+
+  const handleCancel = () => {
+    setMode('normal');
+  };
+
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text color="red">Error: {error}</Text>;
+
+  if (mode === 'create') {
+    return <CreateTaskForm onSubmit={handleCreateSubmit} onCancel={handleCancel} />;
+  }
+
+  if (mode === 'edit' && selectedTask) {
+    return <EditTaskForm task={selectedTask} onSubmit={handleEditSubmit} onCancel={handleCancel} />;
+  }
 
   const repoName = repoPath?.split('/').pop() || 'unknown';
 
