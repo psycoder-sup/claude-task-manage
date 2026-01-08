@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import { useTasks } from './hooks/useTasks.js';
 import { CreateTaskForm } from './components/CreateTaskForm.js';
@@ -14,6 +14,16 @@ export function App({ repoPath: initialRepoPath }) {
     const [focusedColumn, setFocusedColumn] = useState(0);
     const [focusedTaskIndex, setFocusedTaskIndex] = useState({ 0: 0, 1: 0, 2: 0 });
     const [selectedTask, setSelectedTask] = useState(null);
+    const [terminalHeight, setTerminalHeight] = useState(process.stdout.rows);
+    useEffect(() => {
+        const handleResize = () => {
+            setTerminalHeight(process.stdout.rows);
+        };
+        process.stdout.on('resize', handleResize);
+        return () => {
+            process.stdout.off('resize', handleResize);
+        };
+    }, []);
     const tasksByStatus = {
         TODO: tasks.filter(t => t.status === 'TODO'),
         INPROGRESS: tasks.filter(t => t.status === 'INPROGRESS'),
@@ -130,16 +140,25 @@ export function App({ repoPath: initialRepoPath }) {
         return _jsx(PlanPicker, { onSelect: handleLinkPlanSubmit, onCancel: handleCancel });
     }
     const repoName = repoPath?.split('/').pop() || 'unknown';
-    return (_jsxs(Box, { flexDirection: "column", width: "100%", children: [_jsx(Box, { borderStyle: "single", paddingX: 1, children: _jsxs(Text, { bold: true, children: ["claude-tasks: ", repoName] }) }), _jsxs(Box, { flexGrow: 1, children: [_jsx(Box, { flexGrow: 1, flexDirection: "row", children: STATUSES.map((status, colIndex) => (_jsxs(Box, { flexDirection: "column", flexGrow: 1, borderStyle: "single", borderColor: focusedColumn === colIndex ? 'cyan' : undefined, children: [_jsx(Box, { paddingX: 1, children: _jsxs(Text, { bold: true, children: [status, " (", tasksByStatus[status].length, ")"] }) }), _jsx(Box, { flexDirection: "column", paddingX: 1, children: tasksByStatus[status].map((task, taskIndex) => {
-                                        const isFocused = focusedColumn === colIndex && focusedTaskIndex[colIndex] === taskIndex;
-                                        const completedTodos = task.todos.filter(t => t.completed).length;
-                                        const totalTodos = task.todos.length;
-                                        const indicators = [];
-                                        if (task.planPath)
-                                            indicators.push('[P]');
-                                        if (totalTodos > 0)
-                                            indicators.push(`[T ${completedTodos}/${totalTodos}]`);
-                                        return (_jsx(Box, { marginY: 0, children: _jsxs(Text, { backgroundColor: isFocused ? 'cyan' : undefined, color: isFocused ? 'black' : undefined, children: [isFocused ? '> ' : '  ', task.name.slice(0, 18), indicators.length > 0 ? ` ${indicators.join(' ')}` : ''] }) }, task.id));
-                                    }) })] }, status))) }), _jsxs(Box, { flexDirection: "column", width: 30, borderStyle: "single", borderColor: "gray", children: [_jsx(Box, { paddingX: 1, children: _jsx(Text, { bold: true, children: "Details" }) }), selectedTask ? (_jsxs(Box, { flexDirection: "column", paddingX: 1, children: [_jsx(Text, { bold: true, children: selectedTask.name }), _jsx(Text, { dimColor: true, children: selectedTask.status }), _jsx(Text, { children: "-------------" }), _jsx(Text, { wrap: "wrap", children: selectedTask.description }), selectedTask.planPath && (_jsxs(_Fragment, { children: [_jsx(Text, { children: "-------------" }), _jsx(Text, { dimColor: true, children: "Plan:" }), _jsx(Text, { children: selectedTask.planPath.split('/').pop() })] })), selectedTask.todos.length > 0 && (_jsxs(_Fragment, { children: [_jsx(Text, { children: "-------------" }), _jsx(Text, { dimColor: true, children: "Todos:" }), selectedTask.todos.map(todo => (_jsxs(Text, { children: [todo.completed ? '[x]' : '[ ]', " ", todo.content] }, todo.id)))] }))] })) : (_jsx(Box, { paddingX: 1, children: _jsx(Text, { dimColor: true, children: "Select a task" }) }))] })] }), _jsx(Box, { borderStyle: "single", paddingX: 1, children: _jsx(Text, { dimColor: true, children: "[n] New  [e] Edit  [arrows] Move  [d] Delete  [p] Plan  [t] Todo  [q] Quit" }) })] }));
+    return (_jsxs(Box, { flexDirection: "column", width: "100%", height: terminalHeight, children: [_jsx(Box, { borderStyle: "single", paddingX: 1, children: _jsxs(Text, { bold: true, children: ["claude-tasks: ", repoName] }) }), _jsxs(Box, { flexGrow: 1, children: [_jsx(Box, { flexGrow: 1, flexDirection: "row", children: STATUSES.map((status, colIndex) => {
+                            const statusColors = {
+                                TODO: 'yellow',
+                                INPROGRESS: 'blue',
+                                DONE: 'green',
+                            };
+                            const columnColor = statusColors[status];
+                            const isFocused = focusedColumn === colIndex;
+                            return (_jsxs(Box, { flexDirection: "column", flexGrow: 1, borderStyle: isFocused ? 'double' : 'single', borderColor: isFocused ? 'cyan' : columnColor, children: [_jsx(Box, { paddingX: 1, children: _jsxs(Text, { bold: true, color: columnColor, children: [status, " (", tasksByStatus[status].length, ")"] }) }), _jsx(Box, { flexDirection: "column", paddingX: 1, children: tasksByStatus[status].map((task, taskIndex) => {
+                                            const isFocused = focusedColumn === colIndex && focusedTaskIndex[colIndex] === taskIndex;
+                                            const completedTodos = task.todos.filter(t => t.completed).length;
+                                            const totalTodos = task.todos.length;
+                                            const indicators = [];
+                                            if (task.planPath)
+                                                indicators.push('[P]');
+                                            if (totalTodos > 0)
+                                                indicators.push(`[T ${completedTodos}/${totalTodos}]`);
+                                            return (_jsx(Box, { marginY: 0, children: _jsxs(Text, { backgroundColor: isFocused ? 'cyan' : undefined, color: isFocused ? 'black' : undefined, children: [isFocused ? '> ' : '  ', task.name.slice(0, 18), indicators.length > 0 ? ` ${indicators.join(' ')}` : ''] }) }, task.id));
+                                        }) })] }, status));
+                        }) }), _jsxs(Box, { flexDirection: "column", width: 30, borderStyle: "single", borderColor: "magenta", children: [_jsx(Box, { paddingX: 1, children: _jsx(Text, { bold: true, color: "magenta", children: "Details" }) }), selectedTask ? (_jsxs(Box, { flexDirection: "column", paddingX: 1, children: [_jsx(Text, { bold: true, children: selectedTask.name }), _jsx(Text, { dimColor: true, children: selectedTask.status }), _jsx(Text, { children: "-------------" }), _jsx(Text, { wrap: "wrap", children: selectedTask.description }), selectedTask.planPath && (_jsxs(_Fragment, { children: [_jsx(Text, { children: "-------------" }), _jsx(Text, { dimColor: true, children: "Plan:" }), _jsx(Text, { children: selectedTask.planPath.split('/').pop() })] })), selectedTask.todos.length > 0 && (_jsxs(_Fragment, { children: [_jsx(Text, { children: "-------------" }), _jsx(Text, { dimColor: true, children: "Todos:" }), selectedTask.todos.map(todo => (_jsxs(Text, { children: [todo.completed ? '[x]' : '[ ]', " ", todo.content] }, todo.id)))] }))] })) : (_jsx(Box, { paddingX: 1, children: _jsx(Text, { dimColor: true, children: "Select a task" }) }))] })] }), _jsx(Box, { borderStyle: "single", paddingX: 1, children: _jsx(Text, { dimColor: true, children: "[n] New  [e] Edit  [arrows] Move  [d] Delete  [p] Plan  [t] Todo  [q] Quit" }) })] }));
 }
 //# sourceMappingURL=App.js.map

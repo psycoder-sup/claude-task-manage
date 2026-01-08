@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import { Task, TaskStatus } from '@claude-task-manage/core';
 import { useTasks } from './hooks/useTasks.js';
@@ -23,6 +23,17 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
   const [focusedColumn, setFocusedColumn] = useState(0);
   const [focusedTaskIndex, setFocusedTaskIndex] = useState<Record<number, number>>({ 0: 0, 1: 0, 2: 0 });
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [terminalHeight, setTerminalHeight] = useState(process.stdout.rows);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setTerminalHeight(process.stdout.rows);
+    };
+    process.stdout.on('resize', handleResize);
+    return () => {
+      process.stdout.off('resize', handleResize);
+    };
+  }, []);
 
   const tasksByStatus = {
     TODO: tasks.filter(t => t.status === 'TODO'),
@@ -145,23 +156,32 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
   const repoName = repoPath?.split('/').pop() || 'unknown';
 
   return (
-    <Box flexDirection="column" width="100%">
+    <Box flexDirection="column" width="100%" height={terminalHeight}>
       <Box borderStyle="single" paddingX={1}>
         <Text bold>claude-tasks: {repoName}</Text>
       </Box>
 
       <Box flexGrow={1}>
         <Box flexGrow={1} flexDirection="row">
-          {STATUSES.map((status, colIndex) => (
+          {STATUSES.map((status, colIndex) => {
+            const statusColors: Record<TaskStatus, string> = {
+              TODO: 'yellow',
+              INPROGRESS: 'blue',
+              DONE: 'green',
+            };
+            const columnColor = statusColors[status];
+            const isFocused = focusedColumn === colIndex;
+
+            return (
             <Box
               key={status}
               flexDirection="column"
               flexGrow={1}
-              borderStyle="single"
-              borderColor={focusedColumn === colIndex ? 'cyan' : undefined}
+              borderStyle={isFocused ? 'double' : 'single'}
+              borderColor={isFocused ? 'cyan' : columnColor}
             >
               <Box paddingX={1}>
-                <Text bold>{status} ({tasksByStatus[status].length})</Text>
+                <Text bold color={columnColor}>{status} ({tasksByStatus[status].length})</Text>
               </Box>
               <Box flexDirection="column" paddingX={1}>
                 {tasksByStatus[status].map((task, taskIndex) => {
@@ -187,11 +207,12 @@ export function App({ repoPath: initialRepoPath }: AppProps) {
                 })}
               </Box>
             </Box>
-          ))}
+          );
+          })}
         </Box>
 
-        <Box flexDirection="column" width={30} borderStyle="single" borderColor="gray">
-          <Box paddingX={1}><Text bold>Details</Text></Box>
+        <Box flexDirection="column" width={30} borderStyle="single" borderColor="magenta">
+          <Box paddingX={1}><Text bold color="magenta">Details</Text></Box>
           {selectedTask ? (
             <Box flexDirection="column" paddingX={1}>
               <Text bold>{selectedTask.name}</Text>
