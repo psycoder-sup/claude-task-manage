@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "task-manager": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/Users/sanguk/00_Code/00_Personal/claude-task-manage/packages/mcp/dist/index.js"
+      ],
+      "env": {}
+    }
+  }
+}
