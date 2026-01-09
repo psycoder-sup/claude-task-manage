@@ -44,3 +44,7 @@ Tasks have three statuses (TODO → INPROGRESS → DONE) with embedded todos:
 - **Zod** - Schema validation
 - **proper-lockfile** - File concurrency control
 - **chokidar** - File system watcher
+
+## Workflow
+
+Use the task-manager MCP tools for planning and executing plans. This provides persistent task tracking across sessions.
